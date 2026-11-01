@@ -40,6 +40,20 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
   </style>
+  <!-- PWA Manifest Link -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3a8a">
+
+<!-- Register Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(err => console.log('Service Worker Failed:', err));
+    });
+  }
+</script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-full flex flex-col selection:bg-amber-400 selection:text-royal-950">
 
