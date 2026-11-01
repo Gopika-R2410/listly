@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html font-sans lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklist - Minimal Task Management</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            royal: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+              950: '#172554',
+            },
+            amber: {
+              400: '#facc15',
+              500: '#eab308',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-full flex flex-col selection:bg-amber-400 selection:text-royal-950">
+
+  <!-- AUTH SCREEN (LOGIN / SIGNUP) -->
+  <div id="authScreen" class="fixed inset-0 z-50 bg-royal-950 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <!-- Decorative Accent Header -->
+      <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-royal-600 via-amber-400 to-royal-800"></div>
+
+      <div class="flex items-center gap-2.5 mb-6">
+        <div class="w-9 h-9 rounded-xl bg-amber-400 text-royal-950 flex items-center justify-center font-black text-lg shadow-md">
+          ✓
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-royal-900 dark:text-amber-400">Checklist</span>
+      </div>
+
+      <!-- Auth Form Tabs -->
+      <div class="flex border-b border-slate-200 dark:border-slate-800 mb-6">
+        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold border-b-2 border-royal-600 dark:border-amber-400 text-royal-900 dark:text-amber-400">
+          Sign In
+        </button>
+        <button id="tabSignupBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Email Address</label>
+          <input type="email" id="loginEmail" required placeholder="name@example.com" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div id="loginError" class="text-xs text-rose-500 font-medium hidden"></div>
+        <button type="submit" class="w-full py-2.5 bg-royal-600 hover:bg-royal-700 active:scale-98 text-amber-300 font-extrabold text-xs rounded-xl shadow-md transition-all">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Full Name</label>
+          <input type="text" id="signupName" required placeholder="John Doe" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Email Address</label>
+          <input type="email" id="signupEmail" required placeholder="name@example.com" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Password</label>
+          <input type="password" id="signupPassword" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div id="signupError" class="text-xs text-rose-500 font-medium hidden"></div>
+        <button type="submit" class="w-full py-2.5 bg-royal-600 hover:bg-royal-700 active:scale-98 text-amber-300 font-extrabold text-xs rounded-xl shadow-md transition-all">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP WRAPPER -->
+  <div id="appContainer" class="h-full flex flex-col hidden">
+
+    <!-- TOP HEADER BAR -->
+    <header class="h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-30 px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xs">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+
+        <div onclick="switchView('all')" class="flex items-center gap-2 cursor-pointer">
+          <div class="w-7 h-7 rounded-lg bg-amber-400 text-royal-950 flex items-center justify-center font-black text-sm shadow-xs">
+            ✓
+          </div>
+          <span class="font-extrabold text-base tracking-tight text-royal-900 dark:text-amber-400">Checklist</span>
+        </div>
+      </div>
+
+      <!-- SEARCH & QUICK ACTIONS -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="relative w-36 sm:w-60">
+          <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="handleSearch(this.value)" 
+            placeholder="Search tasks..." 
+            class="w-full pl-8 pr-3 py-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 focus:border-royal-600 dark:focus:border-amber-400 rounded-xl text-xs transition-all focus:outline-none" 
+          />
+        </div>
+
+        <button 
+          onclick="openAddTaskModal()" 
+          class="h-8 px-3.5 bg-royal-600 hover:bg-royal-700 active:scale-95 text-amber-300 font-extrabold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-xs"
+        >
+          <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i>
+          <span class="hidden sm:inline">Add Task</span>
+        </button>
+
+        <button 
+          onclick="toggleTheme()" 
+          class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+          title="Toggle Theme"
+        >
+          <i id="themeIcon" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <div class="max-w-5xl mx-auto flex-1 w-full flex overflow-hidden">
+      
+      <!-- SIDEBAR -->
+      <aside id="sidebar" class="w-64 p-4 border-r border-slate-200 dark:border-slate-800 shrink-0 space-y-6 hidden md:block overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900 md:bg-transparent">
+        
+        <!-- Main Nav Views -->
+        <div class="space-y-1">
+          <button onclick="switchView('all')" id="navAll" class="nav-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="check-square" class="w-4 h-4"></i>
+              <span>All Tasks</span>
+            </div>
+            <span id="countAll" class="text-[10px] font-mono text-slate-400">0</span>
+          </button>
+
+          <button onclick="switchView('today')" id="navToday" class="nav-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+              <span>Today</span>
+            </div>
+            <span id="countToday" class="text-[10px] font-mono text-slate-400">0</span>
+          </button>
+
+          <button onclick="switchView('upcoming')" id="navUpcoming" class="nav-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              <span>Upcoming</span>
+            </div>
+          </button>
+
+          <button onclick="switchView('completed')" id="navCompleted" class="nav-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+              <span>Completed</span>
+            </div>
+            <span id="countCompleted" class="text-[10px] font-mono text-slate-400">0</span>
+          </button>
+        </div>
+
+        <!-- Checklists Section -->
+        <div class="space-y-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div class="flex items-center justify-between px-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">My Checklists</span>
+            <button onclick="openChecklistModal()" class="text-slate-400 hover:text-slate-800 dark:hover:text-white" title="New Checklist">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <div id="checklistsNavList" class="space-y-0.5">
+            <!-- Dynamic Checklists rendered here -->
+          </div>
+        </div>
+
+        <!-- Settings Nav -->
+        <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
+          <button onclick="switchView('settings')" id="navSettings" class="nav-item w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span>Settings</span>
+            </div>
+          </button>
+
+          <!-- Logged in User Bar -->
+          <div class="flex items-center justify-between p-2 mt-2 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            <div class="truncate">
+              <p id="userNameDisplay" class="text-xs font-semibold truncate leading-tight">User</p>
+              <p id="userEmailDisplay" class="text-[10px] text-slate-400 truncate leading-tight">user@example.com</p>
+            </div>
+            <button onclick="handleLogout()" title="Log out" class="text-slate-400 hover:text-rose-500 p-1">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- MAIN WORKSPACE -->
+      <main class="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar">
+        <!-- Dynamic Greeting Header -->
+        <div id="greetingHeader" class="mb-6 pb-4 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h1 id="greetingText" class="text-xl sm:text-2xl font-black text-royal-950 dark:text-slate-100 tracking-tight">
+              Good day 👋
+            </h1>
+            <p id="currentDateText" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium"></p>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-3">
+            <div class="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-xs font-extrabold px-3 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800/60 flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
+              <span id="topProgressBadge">0 / 0 Completed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN VIEW CONTAINER -->
+        <div id="mainContent">
+          <!-- Rendered dynamically -->
+        </div>
+      </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-6 py-2 flex items-center justify-around shrink-0">
+      <button onclick="switchView('all')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-400 focus:text-royal-600 dark:focus:text-amber-400">
+        <i data-lucide="check-square" class="w-4 h-4"></i>
+        <span>All</span>
+      </button>
+      <button onclick="switchView('today')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-400 focus:text-royal-600 dark:focus:text-amber-400">
+        <i data-lucide="clock" class="w-4 h-4"></i>
+        <span>Today</span>
+      </button>
+      <button onclick="openAddTaskModal()" class="w-10 h-10 rounded-full bg-royal-600 text-amber-300 flex items-center justify-center font-bold shadow-md -mt-4 border-2 border-white dark:border-slate-950 active:scale-90">
+        <i data-lucide="plus" class="w-5 h-5 stroke-[3]"></i>
+      </button>
+      <button onclick="switchView('upcoming')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-400 focus:text-royal-600 dark:focus:text-amber-400">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        <span>Upcoming</span>
+      </button>
+      <button onclick="switchView('settings')" class="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-400 focus:text-royal-600 dark:focus:text-amber-400">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- CHECKLIST CREATION / EDIT MODAL -->
+  <div id="checklistModal" class="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <h3 id="checklistModalTitle" class="font-extrabold text-sm text-royal-950 dark:text-amber-400">New Checklist</h3>
+        <button onclick="closeChecklistModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="saveChecklist(event)" class="space-y-4">
+        <input type="hidden" id="checklistEditId" value="" />
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Checklist Name</label>
+          <input type="text" id="checklistNameInput" required placeholder="e.g. Work Projects" class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" />
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Color Accent</label>
+          <div class="flex items-center gap-2">
+            <input type="color" id="checklistColorInput" value="#2563eb" class="w-8 h-8 rounded-lg border-0 cursor-pointer bg-transparent" />
+            <span class="text-xs text-slate-400 font-mono">Select theme color</span>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeChecklistModal()" class="px-3 py-1.5 text-xs text-slate-500 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-royal-600 text-amber-300 font-black text-xs rounded-xl shadow-xs">Save Checklist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT TASK MODAL -->
+  <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+        <h3 id="taskModalTitle" class="font-extrabold text-sm text-royal-950 dark:text-amber-400">Add Task</h3>
+        <button onclick="closeTaskModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="saveTask(event)" class="space-y-3">
+        <input type="hidden" id="taskEditId" value="" />
+        <input 
+          type="text" 
+          id="taskTitleInput" 
+          required 
+          placeholder="What needs to be done?" 
+          class="w-full px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400" 
+        />
+        <textarea 
+          id="taskDescInput" 
+          placeholder="Add notes or description..." 
+          rows="2" 
+          class="w-full px-3.5 py-2 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs resize-none focus:outline-none focus:ring-2 focus:ring-royal-600 dark:focus:ring-amber-400"
+        ></textarea>
+        
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <div>
+            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Checklist</label>
+            <select id="taskChecklistSelect" class="w-full p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium"></select>
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Priority</label>
+            <select id="taskPrioritySelect" class="w-full p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Due Date</label>
+            <input type="date" id="taskDueDateInput" class="w-full p-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeTaskModal()" class="px-3 py-1.5 text-xs text-slate-500 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-royal-600 dark:bg-amber-400 text-amber-300 dark:text-slate-950 text-xs font-black rounded-xl">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toastContainer" class="fixed bottom-16 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    // --- STATE MANAGEMENT ---
+    const todayStr = new Date().toISOString().split('T')[0];
+    let currentUser = JSON.parse(localStorage.getItem('chk_user') || 'null');
+    let checklists = JSON.parse(localStorage.getItem('chk_lists') || '[]');
+    let tasks = JSON.parse(localStorage.getItem('chk_tasks') || '[]');
+    let currentView = 'all';
+    let selectedChecklistId = null;
+    let searchQuery = '';
+
+    // Initialize App
+    window.onload = () => {
+      initTheme();
+      if (currentUser) {
+        showApp();
+      } else {
+        showAuth();
+      }
+      lucide.createIcons();
+    };
+
+    // --- AUTHENTICATION FLOW ---
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const tabLoginBtn = document.getElementById('tabLoginBtn');
+      const tabSignupBtn = document.getElementById('tabSignupBtn');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        tabLoginBtn.className = "flex-1 py-2 text-xs font-bold border-b-2 border-royal-600 dark:border-amber-400 text-royal-900 dark:text-amber-400";
+        tabSignupBtn.className = "flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+      } else {
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        tabSignupBtn.className = "flex-1 py-2 text-xs font-bold border-b-2 border-royal-600 dark:border-amber-400 text-royal-900 dark:text-amber-400";
+        tabLoginBtn.className = "flex-1 py-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600";
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      const users = JSON.parse(localStorage.getItem('chk_registered_users') || '[]');
+      const found = users.find(u => u.email === email && u.password === password);
+
+      if (found) {
+        currentUser = { name: found.name, email: found.email };
+        localStorage.setItem('chk_user', JSON.stringify(currentUser));
+        showApp();
+        showToast(`Welcome back, ${currentUser.name}!`);
+      } else {
+        const errorEl = document.getElementById('loginError');
+        errorEl.textContent = "Invalid email or password.";
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value;
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      const users = JSON.parse(localStorage.getItem('chk_registered_users') || '[]');
+      if (users.some(u => u.email === email)) {
+        const errorEl = document.getElementById('signupError');
+        errorEl.textContent = "Email is already registered.";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      users.push({ name, email, password });
+      localStorage.setItem('chk_registered_users', JSON.stringify(users));
+
+      currentUser = { name, email };
+      localStorage.setItem('chk_user', JSON.stringify(currentUser));
+
+      // Ensure default checklist exists on new registration
+      if (checklists.length === 0) {
+        checklists = [{ id: 'chk_gen', name: 'General Tasks', color: '#2563eb' }];
+        saveStorage();
+      }
+
+      showApp();
+      showToast(`Account created! Welcome, ${name}`);
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem('chk_user');
+      showAuth();
+      showToast('Logged out successfully');
+    }
+
+    function showAuth() {
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('appContainer').classList.add('hidden');
+    }
+
+    function showApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('appContainer').classList.remove('hidden');
+
+      document.getElementById('userNameDisplay').textContent = currentUser.name;
+      document.getElementById('userEmailDisplay').textContent = currentUser.email;
+
+      updateGreeting();
+      renderAll();
+    }
+
+    // --- GREETING LOGIC ---
+    function updateGreeting() {
+      const hour = new Date().getHours();
+      let greeting = 'Good morning';
+      if (hour >= 12 && hour < 18) greeting = 'Good afternoon';
+      else if (hour >= 18) greeting = 'Good evening';
+
+      document.getElementById('greetingText').textContent = `${greeting}, ${currentUser.name} 👋`;
+      document.getElementById('currentDateText').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    // --- NAVIGATION & VIEWS ---
+    function switchView(view, listId = null) {
+      currentView = view;
+      selectedChecklistId = listId;
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+
+      // Update Nav highlighting
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('bg-royal-600/10', 'dark:bg-amber-400/20', 'text-royal-900', 'dark:text-amber-300', 'font-bold'));
+      
+      renderMainContent();
+      renderSidebarChecklists();
+      lucide.createIcons();
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('fixed');
+      sidebar.classList.toggle('inset-y-0');
+      sidebar.classList.toggle('left-0');
+      sidebar.classList.toggle('z-40');
+      sidebar.classList.toggle('shadow-2xl');
+    }
+
+    // --- DATA RENDERING ENGINE ---
+    function renderAll() {
+      updateCounts();
+      renderSidebarChecklists();
+      renderMainContent();
+      lucide.createIcons();
+    }
+
+    function updateCounts() {
+      const pendingAll = tasks.filter(t => !t.completed).length;
+      const todayCount = tasks.filter(t => !t.completed && t.dueDate === todayStr).length;
+      const completedCount = tasks.filter(t => t.completed).length;
+
+      document.getElementById('countAll').textContent = pendingAll;
+      document.getElementById('countToday').textContent = todayCount;
+      document.getElementById('countCompleted').textContent = completedCount;
+
+      document.getElementById('topProgressBadge').textContent = `${completedCount} / ${tasks.length} Completed`;
+    }
+
+    function renderSidebarChecklists() {
+      const container = document.getElementById('checklistsNavList');
+      container.innerHTML = '';
+
+      if (checklists.length === 0) {
+        container.innerHTML = `<p class="text-[10px] text-slate-400 px-2 italic">No checklists yet</p>`;
+        return;
+      }
+
+      checklists.forEach(list => {
+        const count = tasks.filter(t => t.checklistId === list.id && !t.completed).length;
+        const isSelected = currentView === 'checklist' && selectedChecklistId === list.id;
+
+        const div = document.createElement('div');
+        div.className = `group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all ${
+          isSelected 
+            ? 'bg-royal-600/10 dark:bg-amber-400/20 text-royal-900 dark:text-amber-300 font-bold' 
+            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800'
+        }`;
+        
+        div.onclick = () => switchView('checklist', list.id);
+
+        div.innerHTML = `
+          <div class="flex items-center gap-2 truncate">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${list.color || '#2563eb'}"></span>
+            <span class="truncate">${escapeHtml(list.name)}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            ${count > 0 ? `<span class="text-[10px] text-slate-400 font-mono mr-1">${count}</span>` : ''}
+            <button onclick="event.stopPropagation(); openEditChecklistModal('${list.id}')" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-royal-600 p-0.5">
+              <i data-lucide="edit-3" class="w-3 h-3"></i>
+            </button>
+            <button onclick="event.stopPropagation(); duplicateChecklist('${list.id}')" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-amber-500 p-0.5">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+            </button>
+            <button onclick="event.stopPropagation(); deleteChecklist('${list.id}')" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 p-0.5">
+              <i data-lucide="trash-2" class="w-3 h-3"></i>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function renderMainContent() {
+      const container = document.getElementById('mainContent');
+      let filtered = tasks;
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = tasks.filter(t => t.title.toLowerCase().includes(q) || (t.description && t.description.toLowerCase().includes(q)));
+        container.innerHTML = renderTaskListHTML(`Results for "${searchQuery}"`, filtered);
+        return;
+      }
+
+      if (currentView === 'all') {
+        container.innerHTML = renderTaskListHTML("All Tasks", filtered);
+      } else if (currentView === 'today') {
+        const todayTasks = filtered.filter(t => t.dueDate === todayStr);
+        container.innerHTML = renderTaskListHTML("Today's Tasks", todayTasks);
+      } else if (currentView === 'upcoming') {
+        const upcomingTasks = filtered.filter(t => !t.completed && t.dueDate > todayStr);
+        container.innerHTML = renderTaskListHTML("Upcoming Tasks", upcomingTasks);
+      } else if (currentView === 'completed') {
+        const completedTasks = filtered.filter(t => t.completed);
+        container.innerHTML = renderTaskListHTML("Completed History", completedTasks);
+      } else if (currentView === 'checklist' && selectedChecklistId) {
+        const list = checklists.find(c => c.id === selectedChecklistId);
+        const listTasks = filtered.filter(t => t.checklistId === selectedChecklistId);
+        const completedCount = listTasks.filter(t => t.completed).length;
+        const progress = listTasks.length > 0 ? Math.round((completedCount / listTasks.length) * 100) : 0;
+
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="pb-4 border-b border-slate-200 dark:border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-4 h-4 rounded-full" style="background-color: ${list?.color || '#2563eb'}"></span>
+                  <h2 class="text-xl font-bold text-royal-950 dark:text-slate-100">${escapeHtml(list?.name || '')}</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openEditChecklistModal('${list.id}')" class="px-2.5 py-1 text-xs font-semibold bg-slate-200/60 dark:bg-slate-800 rounded-lg hover:bg-slate-200">
+                    Edit Name
+                  </button>
+                  <button onclick="deleteChecklist('${list.id}')" class="px-2.5 py-1 text-xs font-semibold bg-rose-50 text-rose-600 dark:bg-rose-950/40 rounded-lg hover:bg-rose-100">
+                    Delete List
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2 flex items-center gap-3">
+                <div class="flex-1 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-royal-600 dark:bg-amber-400 transition-all duration-300" style="width: ${progress}%"></div>
+                </div>
+                <span class="text-[10px] font-mono text-slate-400">${completedCount}/${listTasks.length} (${progress}%)</span>
+              </div>
+            </div>
+            ${renderTaskListHTML(null, listTasks)}
+          </div>
+        `;
+      } else if (currentView === 'settings') {
+        container.innerHTML = renderSettingsHTML();
+      }
+    }
+
+    function renderTaskListHTML(title, taskArray) {
+      const pending = taskArray.filter(t => !t.completed);
+      const completed = taskArray.filter(t => t.completed);
+
+      return `
+        <div class="space-y-6">
+          ${title ? `
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h2 class="text-lg font-bold text-royal-950 dark:text-slate-100">${title}</h2>
+              <button onclick="openAddTaskModal()" class="text-xs text-royal-600 dark:text-amber-400 font-bold flex items-center gap-1 hover:underline">
+                <i data-lucide="plus" class="w-3.5 h-3.5 stroke-[3]"></i> Add Task
+              </button>
+            </div>
+          ` : ''}
+
+          <div class="space-y-2">
+            ${pending.length === 0 ? `
+              <div class="py-12 text-center text-slate-400 text-xs bg-white/50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                No active tasks found. Click "+ Add Task" to create one! ✨
+              </div>
+            ` : pending.map(t => renderTaskRowHTML(t)).join('')}
+          </div>
+
+          ${completed.length > 0 ? `
+            <div class="pt-6 border-t border-slate-200/60 dark:border-slate-800/60 space-y-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed (${completed.length})</span>
+              <div class="space-y-1.5">
+                ${completed.map(t => renderTaskRowHTML(t)).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function renderTaskRowHTML(task) {
+      const list = checklists.find(c => c.id === task.checklistId);
+      const priorityColors = {
+        High: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200',
+        Medium: 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300',
+        Low: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200'
+      };
+
+      return `
+        <div class="group flex items-center justify-between p-3 rounded-2xl border transition-all duration-150 ${
+          task.completed 
+            ? 'bg-slate-50/50 dark:bg-slate-950/50 border-slate-200/40 dark:border-slate-800/40 opacity-55' 
+            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-royal-300 dark:hover:border-amber-400/50 shadow-xs'
+        }">
+          <div class="flex items-center gap-3 flex-1 min-w-0 pr-2">
+            <button onclick="toggleTask('${task.id}')" class="text-slate-300 hover:text-royal-600 dark:hover:text-amber-400 transition-colors shrink-0">
+              <i data-lucide="${task.completed ? 'check-circle-2' : 'circle'}" class="w-4 h-4 ${task.completed ? 'text-royal-600 dark:text-amber-400' : ''}"></i>
+            </button>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold truncate ${task.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}">
+                  ${escapeHtml(task.title)}
+                </span>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border ${priorityColors[task.priority] || priorityColors.Medium}">
+                  ${task.priority}
+                </span>
+              </div>
+              ${task.description ? `<p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHtml(task.description)}</p>` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0">
+            ${list ? `
+              <span class="hidden sm:inline text-[10px] font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full" style="background-color: ${list.color}"></span>
+                ${escapeHtml(list.name)}
+              </span>
+            ` : ''}
+
+            ${task.dueDate ? `<span class="text-[10px] text-slate-400 font-mono">${task.dueDate}</span>` : ''}
+
+            <div class="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+              <button onclick="openEditTaskModal('${task.id}')" class="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteTask('${task.id}')" class="p-1 text-slate-400 hover:text-rose-500">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSettingsHTML() {
+      return `
+        <div class="space-y-6 max-w-md">
+          <h2 class="text-lg font-bold text-royal-950 dark:text-slate-100">Settings & Account</h2>
+
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-xs">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">User Profile</h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Full Name</label>
+              <input type="text" id="settingsName" value="${escapeHtml(currentUser.name)}" class="w-full px-3.5 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold focus:outline-none" />
+            </div>
+            <button onclick="updateProfile()" class="px-4 py-2 bg-royal-600 text-amber-300 text-xs font-extrabold rounded-xl">
+              Save Profile
+            </button>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-xs">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Reset Local Data</h3>
+            <p class="text-xs text-slate-500">Completely wipe all tasks and checklists from browser storage.</p>
+            <button onclick="resetData()" class="w-full py-2 bg-rose-50 text-rose-600 dark:bg-rose-950/40 text-xs font-bold rounded-xl hover:bg-rose-100">
+              Clear All Storage
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- CHECKLIST CRUD ---
+    function openChecklistModal() {
+      document.getElementById('checklistModalTitle').textContent = "New Checklist";
+      document.getElementById('checklistEditId').value = "";
+      document.getElementById('checklistNameInput').value = "";
+      document.getElementById('checklistColorInput').value = "#2563eb";
+      document.getElementById('checklistModal').classList.remove('hidden');
+    }
+
+    function openEditChecklistModal(id) {
+      const list = checklists.find(c => c.id === id);
+      if (!list) return;
+
+      document.getElementById('checklistModalTitle').textContent = "Edit Checklist";
+      document.getElementById('checklistEditId').value = list.id;
+      document.getElementById('checklistNameInput').value = list.name;
+      document.getElementById('checklistColorInput').value = list.color || "#2563eb";
+      document.getElementById('checklistModal').classList.remove('hidden');
+    }
+
+    function closeChecklistModal() {
+      document.getElementById('checklistModal').classList.add('hidden');
+    }
+
+    function saveChecklist(e) {
+      e.preventDefault();
+      const editId = document.getElementById('checklistEditId').value;
+      const name = document.getElementById('checklistNameInput').value.trim();
+      const color = document.getElementById('checklistColorInput').value;
+
+      if (!name) return;
+
+      if (editId) {
+        checklists = checklists.map(c => c.id === editId ? { ...c, name, color } : c);
+        showToast("Checklist updated!");
+      } else {
+        const newList = { id: `chk_${Date.now()}`, name, color };
+        checklists.push(newList);
+        showToast("Checklist created!");
+      }
+
+      saveStorage();
+      closeChecklistModal();
+      renderAll();
+    }
+
+    function duplicateChecklist(id) {
+      const source = checklists.find(c => c.id === id);
+      if (!source) return;
+
+      const newId = `chk_${Date.now()}`;
+      const newList = { ...source, id: newId, name: `${source.name} (Copy)` };
+      checklists.push(newList);
+
+      const sourceTasks = tasks.filter(t => t.checklistId === id);
+      sourceTasks.forEach(t => {
+        tasks.push({ ...t, id: `tsk_${Math.random().toString(36).substr(2, 9)}`, checklistId: newId, completed: false });
+      });
+
+      saveStorage();
+      renderAll();
+      showToast(`Duplicated "${source.name}"`);
+    }
+
+    function deleteChecklist(id) {
+      const list = checklists.find(c => c.id === id);
+      if (!confirm(`Delete checklist "${list?.name}" and all its tasks?`)) return;
+
+      checklists = checklists.filter(c => c.id !== id);
+      tasks = tasks.filter(t => t.checklistId !== id);
+
+      if (selectedChecklistId === id) {
+        currentView = 'all';
+        selectedChecklistId = null;
+      }
+
+      saveStorage();
+      renderAll();
+      showToast("Checklist deleted");
+    }
+
+    // --- TASK CRUD ---
+    function openAddTaskModal() {
+      if (checklists.length === 0) {
+        showToast("Please create a checklist first!");
+        openChecklistModal();
+        return;
+      }
+
+      document.getElementById('taskModalTitle').textContent = "Add Task";
+      document.getElementById('taskEditId').value = "";
+      document.getElementById('taskTitleInput').value = "";
+      document.getElementById('taskDescInput').value = "";
+      document.getElementById('taskPrioritySelect').value = "Medium";
+      document.getElementById('taskDueDateInput').value = todayStr;
+
+      const select = document.getElementById('taskChecklistSelect');
+      select.innerHTML = checklists.map(c => `<option value="${c.id}" ${c.id === selectedChecklistId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+
+      document.getElementById('taskModal').classList.remove('hidden');
+    }
+
+    function openEditTaskModal(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('taskModalTitle').textContent = "Edit Task";
+      document.getElementById('taskEditId').value = task.id;
+      document.getElementById('taskTitleInput').value = task.title;
+      document.getElementById('taskDescInput').value = task.description || "";
+      document.getElementById('taskPrioritySelect').value = task.priority || "Medium";
+      document.getElementById('taskDueDateInput').value = task.dueDate || todayStr;
+
+      const select = document.getElementById('taskChecklistSelect');
+      select.innerHTML = checklists.map(c => `<option value="${c.id}" ${c.id === task.checklistId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+
+      document.getElementById('taskModal').classList.remove('hidden');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('taskModal').classList.add('hidden');
+    }
+
+    function saveTask(e) {
+      e.preventDefault();
+      const editId = document.getElementById('taskEditId').value;
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const description = document.getElementById('taskDescInput').value.trim();
+      const checklistId = document.getElementById('taskChecklistSelect').value;
+      const priority = document.getElementById('taskPrioritySelect').value;
+      const dueDate = document.getElementById('taskDueDateInput').value;
+
+      if (!title) return;
+
+      if (editId) {
+        tasks = tasks.map(t => t.id === editId ? { ...t, title, description, checklistId, priority, dueDate } : t);
+        showToast("Task updated");
+      } else {
+        tasks.unshift({
+          id: `tsk_${Date.now()}`,
+          title,
+          description,
+          checklistId,
+          priority,
+          dueDate,
+          completed: false,
+          createdAt: new Date().toISOString()
+        });
+        showToast("Task added! ✨");
+      }
+
+      saveStorage();
+      closeTaskModal();
+      renderAll();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      saveStorage();
+      renderAll();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveStorage();
+      renderAll();
+      showToast("Task deleted");
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      renderMainContent();
+      lucide.createIcons();
+    }
+
+    // --- USER SETTINGS ---
+    function updateProfile() {
+      const name = document.getElementById('settingsName').value.trim();
+      if (!name) return;
+
+      currentUser.name = name;
+      localStorage.setItem('chk_user', JSON.stringify(currentUser));
+      updateGreeting();
+      document.getElementById('userNameDisplay').textContent = name;
+      showToast("Profile updated!");
+    }
+
+    function resetData() {
+      if (confirm("Clear all application data and lists?")) {
+        localStorage.removeItem('chk_lists');
+        localStorage.removeItem('chk_tasks');
+        checklists = [];
+        tasks = [];
+        renderAll();
+        showToast("Data reset completed.");
+      }
+    }
+
+    // --- UTILITIES ---
+    function saveStorage() {
+      localStorage.setItem('chk_lists', JSON.stringify(checklists));
+      localStorage.setItem('chk_tasks', JSON.stringify(tasks));
+    }
+
+    function initTheme() {
+      const theme = localStorage.getItem('chk_theme') || 'light';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('chk_theme', isDark ? 'dark' : 'light');
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = "pointer-events-auto bg-royal-950 dark:bg-amber-400 text-amber-300 dark:text-slate-950 text-xs font-bold px-4 py-3 rounded-xl shadow-xl border border-royal-900 dark:border-amber-300 flex items-center justify-between animate-bounce-once";
+      toast.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    function escapeHtml(str) {
+      return str ? str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]) : '';
+    }
+  </script>
+</body>
+</html>
