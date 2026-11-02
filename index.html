@@ -10,6 +10,30 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
+    const menuBtn = document.getElementById('menuBtn'); // Your 3-dot button ID
+const dropdownMenu = document.getElementById('dropdownMenu'); // Your dropdown menu ID
+
+// Toggle menu visibility when clicking the 3-dot button
+menuBtn.addEventListener('click', (event) => {
+  event.stopPropagation(); // Prevents instant closing on click
+  dropdownMenu.classList.toggle('show');
+});
+
+// Close menu automatically when tapping anywhere else on the screen
+document.addEventListener('click', (event) => {
+  if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+    if (!dropdownMenu.contains(event.target) && event.target !== menuBtn) {
+      dropdownMenu.classList.remove('show');
+    }
+  }
+});
+
+// Close menu automatically when any menu option is clicked
+dropdownMenu.querySelectorAll('button, a, li').forEach(item => {
+  item.addEventListener('click', () => {
+    dropdownMenu.classList.remove('show');
+  });
+});
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -40,7 +64,29 @@
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 4px; }
-  </style>
+  /* Ensure the parent menu container has relative positioning */
+.menu-container {
+  position: relative;
+}
+
+/* Dropdown menu styling with high z-index and smooth transition */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  display: none; /* Hidden by default */
+}
+
+/* Display class triggered by JavaScript */
+.dropdown-menu.show {
+  display: block;
+}
+</style>
   <!-- PWA Manifest Link -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e3a8a">
